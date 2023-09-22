@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameController : MonoBehaviour
+public class RouletteSelect : MonoBehaviour
 {
     [SerializeField] private Button oneButton;
     [SerializeField] private Material outline;
@@ -17,6 +17,7 @@ public class GameController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        oneButton.gameObject.SetActive(true);
         oneButton.onClick.AddListener(() =>
         {
             stopFlag = true;
