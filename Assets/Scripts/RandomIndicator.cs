@@ -1,35 +1,63 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+public delegate void RandomIndicatorResult(float value);
+
 public class RandomIndicator : MonoBehaviour
 {
-    [SerializeField] private Slider randomIndicator;
-    [SerializeField] private GameObject indicateObject;
+    public RandomIndicatorResult resultHandler;
 
+    [SerializeField] private int multiplyForIndicate;
+    [SerializeField] private Button oneButton;
+    [SerializeField] private GameObject indicatePrefab;
+
+    private GameObject indicateObject;
     private int circleIndex = 0;
+    private bool stopFlag = false;
 
-    // Start is called before the first frame update
     private void Start()
     {
-        randomIndicator.gameObject.SetActive(true);
-
-        var go = Instantiate(indicateObject, Vector3.up, Quaternion.identity);
-        randomIndicator.onValueChanged.AddListener(value =>
+        oneButton.onClick.AddListener(() =>
         {
-            var current = go.transform.localScale;
-            go.transform.localScale = new Vector3(value * 5, current.y, current.z);
+            stopFlag = true;
+            var result = indicateObject.transform.localScale.x / multiplyForIndicate;
+            Debug.Log($"IndicateValue: {result}");
+            resultHandler?.Invoke(result);
         });
+    }
+
+    private void OnEnable()
+    {
+        stopFlag = false;
+        oneButton.gameObject.SetActive(true);
+        indicateObject = Instantiate(indicatePrefab, Vector3.up, Quaternion.identity);
+    }
+
+    private void OnDisable()
+    {
+        stopFlag = true;
+        oneButton.gameObject.SetActive(false);
+        Destroy(indicateObject);
+        indicateObject = null;
     }
 
     // Update is called once per frame
     private void Update()
     {
+        if (indicateObject == null || stopFlag)
+        {
+            return;
+        }
+
         if (circleIndex >= 360)
         {
             circleIndex = 0;
         }
 
-        randomIndicator.value = Mathf.Abs(Mathf.Sin(Mathf.Deg2Rad * circleIndex));
+        var xScale = Mathf.Abs(Mathf.Sin(Mathf.Deg2Rad * circleIndex));
+        var current = indicateObject.transform.localScale;
+        indicateObject.transform.localScale = new Vector3(xScale * multiplyForIndicate, current.y, current.z);
+
         circleIndex++;
     }
 }

@@ -5,26 +5,36 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
+public delegate void RouletteSelectResult(int value);
+
 public class RouletteSelect : MonoBehaviour
 {
+    public RouletteSelectResult resultHandler;
+
     [SerializeField] private Button oneButton;
     [SerializeField] private Material outline;
     [SerializeField] private List<GameObject> prefabs;
 
+    private List<GameObject> instantObjects;
     private int selectIndex = 0;
     private bool stopFlag = false;
 
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        oneButton.gameObject.SetActive(true);
         oneButton.onClick.AddListener(() =>
         {
             stopFlag = true;
-            Debug.Log(selectIndex);
+            Debug.Log($"Select:{selectIndex}");
+            resultHandler?.Invoke(selectIndex);
         });
+    }
 
-        var instantPrefabs = new List<GameObject>();
+    private void OnEnable()
+    {
+        stopFlag = false;
+        oneButton.gameObject.SetActive(true);
+
+        instantObjects = new List<GameObject>();
         for (int i = 0; i < prefabs.Count; i++)
         {
             const int radius = 2;
@@ -33,16 +43,27 @@ public class RouletteSelect : MonoBehaviour
             var zPos = Mathf.Cos(rad) * radius;
             var go = Instantiate(prefabs[i]);
             go.transform.position = new Vector3(xPos, 1, zPos);
-            instantPrefabs.Add(go);
+            instantObjects.Add(go);
         }
 
-        RandomSelect(instantPrefabs).Forget();
+        RandomSelect(instantObjects).Forget();
+    }
+
+    private void OnDisable()
+    {
+        stopFlag = true;
+        oneButton.gameObject.SetActive(false);
+        foreach (var go in instantObjects)
+        {
+            Destroy(go);
+        }
+        instantObjects.Clear();
     }
 
     private async UniTaskVoid RandomSelect(List<GameObject> instantPrefabs)
     {
         var meshRenderers = instantPrefabs.Select(x => x.GetComponentInChildren<MeshRenderer>()).ToList();
-        while (!stopFlag)
+        while (!stopFlag && instantPrefabs.Any(x => x != null))
         {
             for (int i = 0; i < meshRenderers.Count; i++)
             {

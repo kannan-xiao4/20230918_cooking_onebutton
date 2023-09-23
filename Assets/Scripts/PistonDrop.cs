@@ -1,8 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 
+public delegate void PistonDropResult(int value);
+
 public class PistonDrop : MonoBehaviour
 {
+    public PistonDropResult resultHandler;
+
     [SerializeField] private Button oneButton;
     [SerializeField] private GameObject dropPrefab;
 
@@ -13,22 +17,35 @@ public class PistonDrop : MonoBehaviour
     // Start is called before the first frame update
     private void Start()
     {
-        oneButton.gameObject.SetActive(true);
         oneButton.onClick.AddListener(() =>
         {
             dropRigid.useGravity = true;
             dropRigid.isKinematic = false;
+            // todo: evaluate drop object score
+            resultHandler?.Invoke(10);
         });
+    }
 
+    private void OnEnable()
+    {
+        oneButton.gameObject.SetActive(true);
         dropObject = Instantiate(dropPrefab, Vector3.up * 2, Quaternion.identity);
         dropRigid = dropObject.AddComponent<Rigidbody>();
         dropRigid.isKinematic = true;
     }
 
+    private void OnDisable()
+    {
+        oneButton.gameObject.SetActive(false);
+        Destroy(dropObject);
+        dropObject = null;
+        dropRigid = null;
+    }
+
     // Update is called once per frame
     private void Update()
     {
-        if (!dropRigid.isKinematic)
+        if(dropObject == null || dropRigid == null || !dropRigid.isKinematic)
         {
             return;
         }
