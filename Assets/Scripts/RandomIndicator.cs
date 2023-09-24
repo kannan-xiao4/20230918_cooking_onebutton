@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,8 @@ public class RandomIndicator : MonoBehaviour
 
     [SerializeField] private int multiplyForIndicate;
     [SerializeField] private Button oneButton;
-    [SerializeField] private GameObject indicatePrefab;
+    [SerializeField] private Slider indicateSlider;
+    //[SerializeField] private GameObject indicatePrefab;
 
     private GameObject indicateObject;
     private int circleIndex = 0;
@@ -17,11 +19,15 @@ public class RandomIndicator : MonoBehaviour
 
     private void Start()
     {
-        oneButton.onClick.AddListener(() =>
+        oneButton.onClick.AddListener(async() =>
         {
             stopFlag = true;
-            var result = indicateObject.transform.localScale.x / multiplyForIndicate;
+            oneButton.interactable = false;
+            //var result = indicateObject.transform.localScale.x / multiplyForIndicate;
+            var result = indicateSlider.value;
             Debug.Log($"IndicateValue: {result}");
+
+            await UniTask.Delay(50);
             resultHandler?.Invoke(result);
         });
     }
@@ -30,21 +36,23 @@ public class RandomIndicator : MonoBehaviour
     {
         stopFlag = false;
         oneButton.gameObject.SetActive(true);
-        indicateObject = Instantiate(indicatePrefab, Vector3.up, Quaternion.identity);
+        oneButton.interactable = true;
+        indicateSlider.gameObject.SetActive(true);
+        //indicateObject = Instantiate(indicatePrefab, Vector3.up, Quaternion.identity);
     }
 
     private void OnDisable()
     {
         stopFlag = true;
         oneButton.gameObject.SetActive(false);
-        Destroy(indicateObject);
-        indicateObject = null;
+        indicateSlider.gameObject.SetActive(false);
+        //Destroy(indicateObject);
+        //indicateObject = null;
     }
 
-    // Update is called once per frame
-    private void Update()
+    private void FixedUpdate()
     {
-        if (indicateObject == null || stopFlag)
+        if (stopFlag)
         {
             return;
         }
@@ -55,9 +63,9 @@ public class RandomIndicator : MonoBehaviour
         }
 
         var xScale = Mathf.Abs(Mathf.Sin(Mathf.Deg2Rad * circleIndex));
-        var current = indicateObject.transform.localScale;
-        indicateObject.transform.localScale = new Vector3(xScale * multiplyForIndicate, current.y, current.z);
-
-        circleIndex++;
+        //var current = indicateObject.transform.localScale;
+        //indicateObject.transform.localScale = new Vector3(xScale * multiplyForIndicate, current.y, current.z);
+        indicateSlider.value = xScale;
+        circleIndex += 3;
     }
 }

@@ -5,43 +5,70 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public delegate void RouletteSelectResult(int value);
+public delegate void RouletteSelectBaseFood(BaseFood value);
+public delegate void RouletteSelectSeasoning(Seasoning value);
 
 public class RouletteSelect : MonoBehaviour
 {
-    public RouletteSelectResult resultHandler;
+    public enum Mode
+    {
+        BaseFood,
+        Seasoning
+    }
+
+    public RouletteSelectBaseFood baseFoodResult;
+    public RouletteSelectSeasoning seasoningResult;
 
     [SerializeField] private Button oneButton;
     [SerializeField] private Material outline;
-    [SerializeField] private List<GameObject> prefabs;
+    [SerializeField] private List<GameObject> baseFoodPrefabs;
+    [SerializeField] private List<GameObject> seasoningPrefabs;
 
     private List<GameObject> instantObjects;
     private int selectIndex = 0;
     private bool stopFlag = false;
+    private Mode mode;
 
     private void Start()
     {
         oneButton.onClick.AddListener(() =>
         {
             stopFlag = true;
-            Debug.Log($"Select:{selectIndex}");
-            resultHandler?.Invoke(selectIndex);
+            if ( mode == Mode.BaseFood )
+            {
+                var baseFood = instantObjects[selectIndex].GetComponent<BaseFoodObject>();
+                baseFoodResult?.Invoke(baseFood.Type);
+                Debug.Log($"Select:{selectIndex}, Type:{baseFood.Type}");
+
+            }
+            else
+            {
+                var seasoning = instantObjects[selectIndex].GetComponent<SeasoningObject>();
+                seasoningResult?.Invoke(seasoning.Type);
+                Debug.Log($"Select:{selectIndex}, Type:{seasoning.Type}");
+            }
         });
+    }
+
+    public void SetUpTargetMode(Mode mode)
+    {
+        this.mode = mode;
     }
 
     private void OnEnable()
     {
         stopFlag = false;
         oneButton.gameObject.SetActive(true);
+        var targetPrefabs = mode == Mode.BaseFood ? baseFoodPrefabs : seasoningPrefabs;
 
         instantObjects = new List<GameObject>();
-        for (int i = 0; i < prefabs.Count; i++)
+        for (int i = 0; i < targetPrefabs.Count; i++)
         {
             const int radius = 2;
-            var rad = Mathf.Deg2Rad * 360 * i / prefabs.Count;
+            var rad = Mathf.Deg2Rad * 360 * i / targetPrefabs.Count;
             var xPos = Mathf.Sin(rad) * radius;
             var zPos = Mathf.Cos(rad) * radius;
-            var go = Instantiate(prefabs[i]);
+            var go = Instantiate(targetPrefabs[i]);
             go.transform.position = new Vector3(xPos, 1, zPos);
             instantObjects.Add(go);
         }
@@ -86,7 +113,7 @@ public class RouletteSelect : MonoBehaviour
                     meshRenderers[i].materials = materials.ToArray();
                 }
             }
-            await UniTask.Delay(50);
+            await UniTask.Delay(500);
             selectIndex++;
             selectIndex %= meshRenderers.Count;
         }
