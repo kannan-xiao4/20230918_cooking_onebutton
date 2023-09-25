@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,8 +21,8 @@ public class GameController : MonoBehaviour
     [SerializeField] private TMP_Text processingText;
     [SerializeField] private TMP_Text resultText;
 
-    [SerializeField] private Image okSelectResultImage;
-    [SerializeField] private Image ngSelectResultImage;
+    [SerializeField] private TMP_Text okSelectResultImage;
+    [SerializeField] private TMP_Text ngSelectResultImage;
 
     [SerializeField] private RouletteSelect rouletteSelect;
     [SerializeField] private RandomIndicator randomIndicator;
@@ -56,9 +57,10 @@ public class GameController : MonoBehaviour
 
         // 今回作るレシピの決定
         var target = recipes[Random.Range(0, recipes.Count - 1)];
+        // var target = recipes.First(x => x.Name == "刺身");
 
         await PlayTextAnimation($"「{target.Name}」をつくれ！", recipeObjectiveText);
-        await PlayTextAnimation($"「{target.BaseFood}」を選べ！", processObjectiveText);
+        await PlayTextAnimation($"「{target.BaseFood.GetStringValue()}」を選べ！", processObjectiveText);
 
         // 素材選択ルーレットのセットアップ
         var rouletteResult1 = BaseFood.Null;
@@ -76,6 +78,7 @@ public class GameController : MonoBehaviour
         if (rouletteResult1 != target.BaseFood)
         {
             ngSelectResultImage.gameObject.SetActive(true);
+            await UniTask.Delay(500);
             PlayResult(null).Forget();
             return;
         }
@@ -84,7 +87,7 @@ public class GameController : MonoBehaviour
         await UniTask.Delay(500);
         okSelectResultImage.gameObject.SetActive(false);
 
-        await PlayTextAnimation($"「{target.Seasoning}」を選べ！", processObjectiveText);
+        await PlayTextAnimation($"「{target.Seasoning.GetStringValue()}」を選べ！", processObjectiveText);
 
         // 調味料選択ルーレットのセットアップ
         var rouletteResult2 = Seasoning.Null;
@@ -101,8 +104,8 @@ public class GameController : MonoBehaviour
 
         if (rouletteResult2 != target.Seasoning)
         {
-            // Todo: 失敗ならリザルト画面へ移行
             ngSelectResultImage.gameObject.SetActive(true);
+            await UniTask.Delay(500);
             PlayResult(null).Forget();
             return;
         }
@@ -118,7 +121,7 @@ public class GameController : MonoBehaviour
         processingText.gameObject.SetActive(false);
         await cookingProcess.PlayPreparedAnimation();
 
-        await PlayTextAnimation($"「{target.Cooking}」するぞ！加減を決めろ！", processObjectiveText);
+        await PlayTextAnimation($"「{target.Cooking.GetStringValue()}」するぞ！加減を決めろ！", processObjectiveText);
 
         // 調理工程の加減インジケータのセットアップ
         var indicatorResult = 0f;
@@ -143,8 +146,7 @@ public class GameController : MonoBehaviour
             cookingProcess.resultHandler -= CookedResultHandler;
         }
         cookingProcess.resultHandler += CookedResultHandler;
-        //await cookingProcess.PlayCookingAnimation(indicatorResult);
-        await cookingProcess.PlayCookingAnimation(0.1f);
+        await cookingProcess.PlayCookingAnimation(indicatorResult);
         await UniTask.WaitUntil(() => cookedResult != null);
 
         pistonDrop.SetUpDropObject(cookedResult);
@@ -166,10 +168,10 @@ public class GameController : MonoBehaviour
 
     private async UniTask PlayTextAnimation(string prcessText, TMP_Text target, bool playZoom = true, bool playMove = true)
     {
-        var animator = target.GetComponent<Animator>();
-        animator.Play("Default");
         target.text = prcessText;
         target.gameObject.SetActive(true);
+        var animator = target.GetComponent<Animator>();
+        animator.Play("Default");
 
         if (playZoom)
         {

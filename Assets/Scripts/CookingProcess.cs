@@ -13,6 +13,8 @@ public class CookingProcess : MonoBehaviour
     [SerializeField] private GameObject knifeObject;
     [SerializeField] private GameObject konroObject;
 
+    [SerializeField] private GameObject fishObject;
+
     private Recipe recipe;
     private GameObject cookingObject;
 
@@ -30,14 +32,25 @@ public class CookingProcess : MonoBehaviour
     /// <returns></returns>
     public async UniTask PlayPreparedAnimation()
     {
-        cookingObject = Instantiate(recipe.Prefab, recipe.cookPosition, Quaternion.identity);
-        var renderers = cookingObject.GetComponentsInChildren<MeshRenderer>();
-        foreach (var material in renderers.SelectMany(x => x.materials))
+        if (recipe.Cooking == Cooking.Cut)
         {
-            material.SetFloat(Keyword, 0.5f);
+            cookingObject = Instantiate(fishObject, recipe.cookPosition, Quaternion.identity);
+        }
+        else
+        {
+            cookingObject = Instantiate(recipe.Prefab, recipe.cookPosition, Quaternion.identity);
+            var renderers = cookingObject.GetComponentsInChildren<MeshRenderer>();
+            foreach (var material in renderers.SelectMany(x => x.materials))
+            {
+                material.SetFloat(Keyword, 0.5f);
+            }
         }
 
         await UniTask.Delay(100);
+
+        var equip = GetEquipment();
+        equip.gameObject.SetActive(true);
+        konroObject.gameObject.SetActive(recipe.Cooking != Cooking.Cut);
     }
 
     /// <summary>
@@ -47,26 +60,37 @@ public class CookingProcess : MonoBehaviour
     /// <returns></returns>
     public async UniTask PlayCookingAnimation(float target)
     {
-        var equip = GetEquipment();
-        equip.gameObject.SetActive(true);
-        // play animation eqio
-        konroObject.gameObject.SetActive(recipe.Cooking != Cooking.Cut);
-
-        var renderers = cookingObject.GetComponentsInChildren<MeshRenderer>();
-        var current = renderers[0].material.GetFloat(Keyword);
-        // ToDo: move to cooking object to equip
-        while(current > target)
+        // todo play cookanimation
+        var cookedObject = cookingObject;
+        if (recipe.Cooking == Cooking.Cut)
         {
-            current -= 0.01f;
-            foreach (var material in renderers.SelectMany(x => x.materials))
+            var animator = GetEquipment().GetComponentInChildren<Animator>();
+            animator.Play("CutAnime");
+            await UniTask.WaitUntil(() => animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f);
+
+            if (target >= 0.8f)
             {
-                material.SetFloat(Keyword, current);
+                DestroyImmediate(cookedObject);
+                cookedObject = Instantiate(recipe.Prefab, recipe.cookPosition, Quaternion.identity);
             }
-            await UniTask.Delay(100);
+        }
+        else
+        {
+            var renderers = cookingObject.GetComponentsInChildren<MeshRenderer>();
+            var current = renderers[0].material.GetFloat(Keyword);
+            while (current > target)
+            {
+                current -= 0.01f;
+                foreach (var material in renderers.SelectMany(x => x.materials))
+                {
+                    material.SetFloat(Keyword, current);
+                }
+                await UniTask.Delay(100);
+            }
         }
 
-        resultHandler?.Invoke(cookingObject);
-        equip.gameObject.SetActive(false);
+        resultHandler?.Invoke(cookedObject);
+        GetEquipment().gameObject.SetActive(false);
         konroObject.gameObject.SetActive(false);
     }
 

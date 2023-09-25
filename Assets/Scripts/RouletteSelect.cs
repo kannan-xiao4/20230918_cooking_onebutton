@@ -64,12 +64,12 @@ public class RouletteSelect : MonoBehaviour
         instantObjects = new List<GameObject>();
         for (int i = 0; i < targetPrefabs.Count; i++)
         {
-            const int radius = 2;
+            const int radius = 1;
             var rad = Mathf.Deg2Rad * 360 * i / targetPrefabs.Count;
-            var xPos = Mathf.Sin(rad) * radius;
-            var zPos = Mathf.Cos(rad) * radius;
+            var xPos = 0.75f * Mathf.Sin(rad) * radius;
+            var zPos = 0.5f * Mathf.Cos(rad) * radius - 1.5f;
             var go = Instantiate(targetPrefabs[i]);
-            go.transform.position = new Vector3(xPos, 1, zPos);
+            go.transform.position = new Vector3(xPos, 2.5f, zPos);
             instantObjects.Add(go);
         }
 
