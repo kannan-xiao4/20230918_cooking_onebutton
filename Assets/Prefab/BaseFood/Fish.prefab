@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1143126460899592003}
   - component: {fileID: 1143126460899592000}
+  - component: {fileID: 1668083954025997196}
   m_Layer: 0
   m_Name: Fish
   m_TagString: Untagged
@@ -47,6 +48,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Type: 1
   OutlineTickness: 0
+--- !u!65 &1668083954025997196
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143126460899592002}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 0
+  serializedVersion: 2
+  m_Size: {x: 0.38878202, y: 0.09556258, z: 0.18641931}
+  m_Center: {x: -0.033038795, y: 0.0020649433, z: -0.0020649135}
 --- !u!1001 &8694122680564858796
 PrefabInstance:
   m_ObjectHideFlags: 0

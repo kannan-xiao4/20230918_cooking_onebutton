@@ -73,14 +73,21 @@ public class CookingProcess : MonoBehaviour
                 DestroyImmediate(cookedObject);
                 cookedObject = Instantiate(recipe.Prefab, recipe.cookPosition, Quaternion.identity);
             }
+            else
+            {
+                cookedObject.transform.localScale = Vector3.one * 2.5f;
+                cookedObject.GetComponent<BoxCollider>().enabled = true;
+            }
         }
         else
         {
+            var t = DetectValueByIndicate(target);
             var renderers = cookingObject.GetComponentsInChildren<MeshRenderer>();
             var current = renderers[0].material.GetFloat(Keyword);
-            while (current > target)
+            var diff = (current - t) / 20;
+            while (current > t)
             {
-                current -= 0.01f;
+                current -= diff;
                 foreach (var material in renderers.SelectMany(x => x.materials))
                 {
                     material.SetFloat(Keyword, current);
@@ -102,6 +109,24 @@ public class CookingProcess : MonoBehaviour
             Cooking.Grill => panObject,
             _ => nabeObject,
         };
+    }
+
+    private static float DetectValueByIndicate(float value)
+    {
+        if (value < 0.3f)
+        {
+            return 0.5f;
+        }
+        if (value < 0.5f)
+        {
+            return 0.15f;
+        }
+        if (value < 0.9f)
+        {
+            return 0f;
+        }
+
+        return -0.5f;
     }
 
     private void OnDestroy()

@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,6 +9,9 @@ using UnityEngine.UI;
 public class GameController : MonoBehaviour
 {
     [SerializeField] private List<Recipe> recipes;
+
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private List<SystemSound> clipList;
 
     [SerializeField] private Canvas titleCanvas;
     [SerializeField] private Canvas inGameCanvas;
@@ -57,7 +61,6 @@ public class GameController : MonoBehaviour
 
         // 今回作るレシピの決定
         var target = recipes[Random.Range(0, recipes.Count - 1)];
-        // var target = recipes.First(x => x.Name == "刺身");
 
         await PlayTextAnimation($"「{target.Name}」をつくれ！", recipeObjectiveText);
         await PlayTextAnimation($"「{target.BaseFood.GetStringValue()}」を選べ！", processObjectiveText);
@@ -78,12 +81,14 @@ public class GameController : MonoBehaviour
         if (rouletteResult1 != target.BaseFood)
         {
             ngSelectResultImage.gameObject.SetActive(true);
+            PlaySE(Audio.Failure);
             await UniTask.Delay(500);
             PlayResult(null).Forget();
             return;
         }
 
         okSelectResultImage.gameObject.SetActive(true);
+        PlaySE(Audio.Success);
         await UniTask.Delay(500);
         okSelectResultImage.gameObject.SetActive(false);
 
@@ -105,12 +110,14 @@ public class GameController : MonoBehaviour
         if (rouletteResult2 != target.Seasoning)
         {
             ngSelectResultImage.gameObject.SetActive(true);
+            PlaySE(Audio.Failure);
             await UniTask.Delay(500);
             PlayResult(null).Forget();
             return;
         }
 
         okSelectResultImage.gameObject.SetActive(true);
+        PlaySE(Audio.Success);
         await UniTask.Delay(500);
         okSelectResultImage.gameObject.SetActive(false);
 
@@ -120,8 +127,7 @@ public class GameController : MonoBehaviour
         await PlayTextAnimation($"下準備中...", processingText, playZoom: false, playMove: true);
         processingText.gameObject.SetActive(false);
         await cookingProcess.PlayPreparedAnimation();
-
-        await PlayTextAnimation($"「{target.Cooking.GetStringValue()}」するぞ！加減を決めろ！", processObjectiveText);
+        await PlayTextAnimation($"{target.Cooking.GetStringValue()}ぞ！加減を決めろ！", processObjectiveText);
 
         // 調理工程の加減インジケータのセットアップ
         var indicatorResult = 0f;
@@ -134,7 +140,6 @@ public class GameController : MonoBehaviour
         randomIndicator.gameObject.SetActive(true);
         await UniTask.WaitUntil(() => indicatorResult > 0);
         randomIndicator.gameObject.SetActive(false);
-
         await PlayTextAnimation("調理開始！", processingText, playZoom: true, playMove: false);
         processingText.gameObject.SetActive(false);
 
@@ -146,8 +151,10 @@ public class GameController : MonoBehaviour
             cookingProcess.resultHandler -= CookedResultHandler;
         }
         cookingProcess.resultHandler += CookedResultHandler;
+        PlaySE(ConvertFromCooking(target.Cooking));
         await cookingProcess.PlayCookingAnimation(indicatorResult);
         await UniTask.WaitUntil(() => cookedResult != null);
+        audioSource.Stop();
 
         pistonDrop.SetUpDropObject(cookedResult);
         await PlayTextAnimation($"落として盛り付けろ！", processObjectiveText);
@@ -162,8 +169,32 @@ public class GameController : MonoBehaviour
         pistonDrop.gameObject.SetActive(true);
         await UniTask.WaitUntil(() => dropResult != null);
         pistonDrop.gameObject.SetActive(false);
+        PlaySE(Audio.OnDish);
 
         PlayResult(dropResult).Forget();
+    }
+
+    private Audio ConvertFromCooking(Cooking cook)
+    {
+        switch (cook)
+        {
+            case Cooking.Stew:
+                return Audio.Stew;
+            case Cooking.Cut:
+                return Audio.Cut;
+            case Cooking.Fry:
+                return Audio.Fry;
+            case Cooking.Grill:
+                return Audio.Grill;
+            default:
+                throw new System.NotImplementedException();
+        }
+    }
+
+    private void PlaySE(Audio type)
+    {
+        var sound = clipList.First(x => x.type == type);
+        audioSource.PlayOneShot(sound.clip);
     }
 
     private async UniTask PlayTextAnimation(string prcessText, TMP_Text target, bool playZoom = true, bool playMove = true)
@@ -193,8 +224,6 @@ public class GameController : MonoBehaviour
     /// <returns></returns>
     private async UniTaskVoid PlayResult(GameObject cooked)
     {
-        await UniTask.Delay(100);
-
         ngSelectResultImage.gameObject.SetActive(false);
         recipeObjectiveText.gameObject.SetActive(false);
         processObjectiveText.gameObject.SetActive(false);
@@ -204,11 +233,14 @@ public class GameController : MonoBehaviour
 
         if (cooked == null)
         {
-            resultText.text = "何も生み出せなかった";
+            resultText.text = "店仕舞い";
             return;
         }
 
-        resultText.text = "お料理できたね♪";
+        await UniTask.Delay(200);
+        cooked.transform.position = cooked.transform.position + UnityEngine.Vector3.up;
+        PlaySE(Audio.Result);
+        resultText.text = "へい！お待ち！";
         cookedObject = cooked;
     }
 }
