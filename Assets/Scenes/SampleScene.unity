@@ -123,6 +123,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &50690010 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5148396942767662837, guid: 88622b36142ae0a47b7826cab636ef80, type: 3}
+  m_PrefabInstance: {fileID: 275256818}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &190528393
 GameObject:
   m_ObjectHideFlags: 0
@@ -260,11 +265,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7439081335664164567, guid: 88622b36142ae0a47b7826cab636ef80, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 7439081335664164567, guid: 88622b36142ae0a47b7826cab636ef80, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 7439081335664164567, guid: 88622b36142ae0a47b7826cab636ef80, type: 3}
       propertyPath: m_LocalRotation.w
@@ -301,6 +306,27 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7439081335664164566, guid: 88622b36142ae0a47b7826cab636ef80, type: 3}
   m_PrefabInstance: {fileID: 275256818}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &275256821
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 50690010}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1db527800f019004ab2e2a1a06f79be0, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &411412543
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1586,7 +1612,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.38268343, y: 0, z: 0, w: 0.92387956}
-  m_LocalPosition: {x: 0, y: 4, z: -5}
+  m_LocalPosition: {x: 0, y: 4, z: -3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2648,7 +2674,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1410370733
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3698,7 +3724,7 @@ MonoBehaviour:
     Seasoning: 2
     Cooking: 1
     Prefab: {fileID: 6803724991512576616, guid: 908c31ee7e31514468b52ec0d27c029d, type: 3}
-    cookPosition: {x: 0, y: 0, z: 0}
+    cookPosition: {x: 0, y: 1, z: 0}
   - Name: "\u523A\u8EAB"
     BaseFood: 1
     Seasoning: 4
@@ -3733,8 +3759,8 @@ MonoBehaviour:
     BaseFood: 4
     Seasoning: 2
     Cooking: 1
-    Prefab: {fileID: 6803724991512576616, guid: 908c31ee7e31514468b52ec0d27c029d, type: 3}
-    cookPosition: {x: 0, y: 0, z: 0}
+    Prefab: {fileID: 5935244753017818440, guid: c3b6cd3ca8808fd44bfea762bf7ef605, type: 3}
+    cookPosition: {x: 0, y: 1, z: 0}
   - Name: "\u30B9\u30C6\u30FC\u30AD"
     BaseFood: 4
     Seasoning: 4
